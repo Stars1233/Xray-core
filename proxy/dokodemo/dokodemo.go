@@ -38,6 +38,7 @@ type DokodemoDoor struct {
 	config        *Config
 	address       net.Address
 	port          net.Port
+	portTos       map[string]uint32
 	sockopt       *session.Sockopt
 }
 
@@ -49,6 +50,7 @@ func (d *DokodemoDoor) Init(config *Config, pm policy.Manager, sockopt *session.
 	d.config = config
 	d.address = config.GetPredefinedAddress()
 	d.port = net.Port(config.Port)
+	d.portTos = config.PortTos
 	d.policyManager = pm
 	d.sockopt = sockopt
 
@@ -88,10 +90,12 @@ func (d *DokodemoDoor) Process(ctx context.Context, network net.Network, conn st
 				}
 			}
 		}
+		if d.portTos != nil && d.portTos[port] != 0 {
+			dest.Port = net.Port(d.portTos[port])
+		}
 		if dest.Port == 0 {
 			dest.Port = net.Port(common.Must2(strconv.Atoi(port)).(int))
 		}
-
 	}
 
 	destinationOverridden := false
